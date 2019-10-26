@@ -1,0 +1,29 @@
+version: '3.5'
+
+services:
+  plasma_node:
+    image: plasmachain/mainet:latest
+    container_name: pl_prod
+    command: >
+      bash -c "ionode --replay-blockchain
+      --genesis-json pl_prod/conf/genesis.json
+      --config config.ini
+      --verbose-http-errors
+      --max-transaction-time=100
+      --data-dir /pl_prod/blockchain"
+
+    volumes:
+      - ./data/pl_prod/producer:/pl_prod
+      - ./data/pl_prod/producer/conf/config.ini:/root/.local/share/ion/ionode/config/config.ini
+    restart: always
+    ports:
+      - 8801:8888
+      - 9876:9876
+    networks:
+      - plasma_net
+
+networks:
+  plasma_net:
+    name: pl_prod
+    driver: bridge
+
