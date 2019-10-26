@@ -1,0 +1,9 @@
+# npm node modules
+node_modules
+
+# coverage dir and files
+coverage
+coverage.json
+
+# build dir
+build
