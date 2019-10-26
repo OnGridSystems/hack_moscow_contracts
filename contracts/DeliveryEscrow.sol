@@ -1,17 +1,16 @@
 pragma solidity 0.5.12;
 
-import "../openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "../openzeppelin-contracts/contracts/math/SafeMath.sol";
+import "../openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "../openzeppelin-contracts/contracts/ownership/Ownable.sol";
 
-contract DeliveryEscrow {
+contract DeliveryEscrow is Ownable {
     using SafeMath for uint256;
-    address public owner;
     IERC20 public token;
     mapping(address => uint256) public totalFunds;
     mapping(address => uint256) public lockedFunds;
 
     constructor(IERC20 _token) public {
-        owner = msg.sender;
         token = _token;
     }
 
@@ -29,11 +28,6 @@ contract DeliveryEscrow {
         address indexed carrier,
         uint256 indexed amount
     );
-
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
 
     function addFunds(address carrier, uint256 amount) public onlyOwner {
         require(carrier != address(0), "Wrong address");
