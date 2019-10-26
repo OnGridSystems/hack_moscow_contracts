@@ -62,7 +62,7 @@ contract('DeliveryEscrow', function (
       it('can add allowed amount', async function () {
         expect(await this.escrow.totalFunds(carrier))
           .to.be.bignumber.equal(new BN('0'));
-        ({logs: this.logs } = await this.escrow.addFunds(
+        ({ logs: this.logs } = await this.escrow.addFunds(
           carrier, new BN('100'), { from: platform }
         ));
         expectEvent.inLogs(this.logs, 'FundsAdded');
@@ -118,7 +118,7 @@ contract('DeliveryEscrow', function (
         );
         await this.escrow.lockFunds(
           carrier, new BN('100'), { from: platform }
-        )
+        );
       });
       it('can\'t unlock zero funds', async function () {
         await expectRevert(
