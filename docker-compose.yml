@@ -3,6 +3,7 @@ version: '3.5'
 services:
   plasma_node:
     image: plasmachain/mainet:latest
+    hostname: localhost
     container_name: pl_prod
     command: >
       bash -c "ionode --replay-blockchain
@@ -20,10 +21,10 @@ services:
       - 8801:8888
       - 9876:9876
     networks:
-      - plasma_net
+      - ongridsyssys
 
 networks:
-  plasma_net:
-    name: pl_prod
+  ongridsyssys:
+    name: ongridsyssys
     driver: bridge
 
