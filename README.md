@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.com/OnGridSystems/hack_moscow_contracts.svg?branch=master)](https://travis-ci.com/OnGridSystems/hack_moscow_contracts) [![Hackathon Hack.Moscow v3](https://img.shields.io/badge/hacken%20moscow-v3-green.svg)](https://hack.moscow/)
+[![Build Status](https://travis-ci.com/OnGridSystems/hack_moscow_contracts.svg?token=euVuUJTLZXyJyBPXi81v&branch=master)](https://travis-ci.com/OnGridSystems/hack_moscow_contracts)
+[![Hackathon Hack.Moscow v3](https://img.shields.io/badge/hacken%20moscow-v3-green.svg)](https://hack.moscow/)
 
 Blockchain-Secured Delivery Platform can use any blockchain which supports arbitrary code execution (smart contracts) like Ethereum, TRON, EOS, PlasmaPay and others.
 
