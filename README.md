@@ -48,7 +48,7 @@ https-client-validate-peers = 1
 # peer-key =
 
 
-signature-provider = publickey=KEY:private_key
+signature-provider = PUBLIC_KEY=KEY:PRIVATE_KEY
 
 p2p-peer-address = agribofc.liberty.plasmadlt.com:9876
 p2p-peer-address = bnpparibas.liberty.plasmadlt.com:9876
@@ -114,6 +114,7 @@ http-server-address = 0.0.0.0:8801  # Need to change port to 8801, some systems 
 
 # The setting up a signature must be is very care
 # Important this "=KEY:" signalizing node to determinate two keys PUBLIC and PRIVATE
+                           # PUBLIC KEY                           # "=KEY:" using for mark keys     # PRIVATE KEY  
 signature-provider = PLASMA**************************************************=KEY:5JK************************************************
 
 # These nodes of PlasmaDLT the most stable and very good to connect your node to network.
@@ -121,7 +122,106 @@ signature-provider = PLASMA**************************************************=KE
 p2p-peer-address = swisubs.liberty.plasmadlt.com:9876
 p2p-peer-address = sberrus.liberty.plasmadlt.com:9876
 ```
-Other settings for `config.ini` you dont need to change, there is all ok.
+Other settings for `config.ini` you dont need to change, there is all ok. <br>
 
 #### Next not trivial things
+The origin PlasmaDLT guide says we need to use `docker` commands to start node. <br>
+We are have expected some problems in commands described in origin guide. <br>
+And we have some remarks about this. <br>
+1) We are think, better to use `docker-compose` and `docker-compose.yml` file <br>
+   to set configurations and mapping to configure node. <br>
+    - Node works fine with `genesis.json`, but here is some problems with <br>
+      `config.ini`, node trying to get configurations from mappings described in origin <br>
+      docs and pushed to image by `--volume` flag in `docker` command. There is all fine with <br>
+      `genesis.json`, but node can not get `config.ini` from pushed volume with your <br>
+      configuration. The problem hides in node. Node cant find yours `config.ini` and takes it <br>
+      from node core: `/root/.local/share/ion/ionode/config/config.ini`, so we need to <br>
+      set other mapping for volume, not like as origin description. You are can take a look <br>
+      to snippet of `docker-compose.yml`.
+```yaml
+version: '3.5'
 
+services:
+  plasma_node:
+    image: plasmachain/mainet:latest
+    hostname: localhost
+    container_name: pl_prod
+    command: >
+      bash -c "ionode --replay-blockchain
+      --genesis-json <dir_with_your_configs>/conf/genesis.json    # Example: /pl_prod/conf/genesis.json
+      --config config.ini   # There is not need to set path, 
+                            # cause node cant recognize it and takes a look to core path, were it starts
+      --verbose-http-errors
+      --max-transaction-time=100
+      --data-dir /<your_work_dir>/blockchain"   # Work dir is same, were you are put your configs. 
+                                                # Directory of blockchain data/history
+    volumes:
+      - ./data/pl_prod/producer:/pl_prod        # We are set name as 'pl_prod' - it is a work_dir,
+                                                # but parent dir is 'data', you are can set yours
+      - ./data/pl_prod/producer/conf/config.ini:/root/.local/share/ion/ionode/config/config.ini   # And here we are got a solution to resolve problem with bad mapping for 'config.ini'
+    restart: always   # Origin guide says - set it to 'on-failure', but we are pref set it to 'always'
+    ports:
+      - 8801:8888     # Settig up ports for node http API
+      - 9876:9876
+    networks:
+      - ongridsyssys  # Set your network what described in origin docs
+
+networks:             # Here we are invokes network to work
+  ongridsyssys:
+    name: ongridsyssys
+    driver: bridge
+
+```
+That's all! If you have correctly setup configs and keys in `signature-provider` (config.ini) param <br>
+> *Note*:
+> PUBLIC and PRIVATE key you can get from your account in wallet page at [plasmapay.com](https://plasmapay.com) . 
+### 2. Run node.
+That is pretty simple. If you already installed the latest versions of `docker` and `docker-compose`. <br>
+So you just need to run following commands:
+```bash
+OnGridCore@OnGridSystems:~/$ cd <work_dir>/     # Where you have put a "docker-compose.yml" file
+OnGridCore@OnGridSystems:~/<work_dir>$ docker-compose up --build    # Use flag --build to be sure of your configs
+```
+You should see:
+```bash
+Creating network "ongridsyssys" with driver "bridge"
+Creating pl_prod ... done
+Attaching to pl_prod
+pl_prod        | APPBASE: Warning: The following configuration items in the config.ini file are redundantly set to
+pl_prod        |          their default value:
+pl_prod        |              https-client-validate-peers, p2p-listen-endpoint, allowed-connection
+pl_prod        |          Explicit values will override future changes to application defaults. Consider commenting out or
+pl_prod        |          removing these items.
+pl_prod        | info  2019-10-27T09:31:35.356 thread-0  chain_plugin.cpp:333          plugin_initialize    ] initializing chain plugin
+pl_prod        | info  2019-10-27T09:31:35.357 thread-0  chain_plugin.cpp:512          plugin_initialize    ] Replay requested: deleting state database
+pl_prod        | info  2019-10-27T09:31:35.388 thread-0  block_log.cpp:125             open                 ] Log is nonempty
+pl_prod        | info  2019-10-27T09:31:35.389 thread-0  block_log.cpp:152             open                 ] Index is nonempty
+pl_prod        | info  2019-10-27T09:31:35.394 thread-0  http_plugin.cpp:452           plugin_initialize    ] configured http to listen on 0.0.0.0:8801
+pl_prod        | warn  2019-10-27T09:31:35.394 thread-0  net_api_plugin.cpp:96         plugin_initialize    ] 
+pl_prod        | **********SECURITY WARNING**********
+pl_prod        | *                                  *
+pl_prod        | * --         Net API            -- *
+pl_prod        | * - EXPOSED to the LOCAL NETWORK - *
+pl_prod        | * - USE ONLY ON SECURE NETWORKS! - *
+pl_prod        | *                                  *
+pl_prod        | ************************************
+pl_prod        | 
+pl_prod        | warn  2019-10-27T09:31:35.394 thread-0  history_plugin.cpp:321        plugin_initialize    ] --filter-on * enabled. This can fill shared_mem, causing ionode to stop.
+pl_prod        | info  2019-10-27T09:31:35.394 thread-0  http_plugin.cpp:399           operator()           ] configured http with Access-Control-Allow-Origin: *
+pl_prod        | info  2019-10-27T09:31:35.395 thread-0  main.cpp:99                   main                 ] ionode version v.0.1.0-dirty
+pl_prod        | info  2019-10-27T09:31:35.395 thread-0  main.cpp:100                  main                 ] ion root is /root/.local/share
+pl_prod        | info  2019-10-27T09:31:35.395 thread-0  main.cpp:101                  main                 ] ionode using configuration file /root/.local/share/ion/ionode/config/config.ini
+pl_prod        | info  2019-10-27T09:31:35.395 thread-0  main.cpp:102                  main                 ] ionode data directory is /pl_prod/blockchain
+pl_prod        | error 2019-10-27T09:31:35.395 thread-0  controller.cpp:1735           startup              ] No head block in fork db, perhaps we need to replay
+pl_prod        | warn  2019-10-27T09:31:35.396 thread-0  controller.cpp:576            initialize_fork_db   ]  Initializing new blockchain with genesis state                  
+pl_prod        | info  2019-10-27T09:31:35.450 thread-0  controller.cpp:307            replay               ] existing block log, attempting to replay from 2 to 8213126 blocks
+```
+Then you should expect logs like:
+```bash
+info  2019-10-25T13:30:00.516 thread-0  producer_plugin.cpp:345       on_incoming_block    ] Received block 49085989bb2b93d4... #671293 @ 2019-10-25T13:30:00.500 signed by agribofc [trxs: 0, lib: 671255, conf: 0, latency: 16 ms]
+info  2019-10-25T13:30:01.017 thread-0  producer_plugin.cpp:345       on_incoming_block    ] Received block 3816fb96c48448bd... #671294 @ 2019-10-25T13:30:01.000 signed by agribofc [trxs: 0, lib: 671255, conf: 0, latency: 17 ms]
+info  2019-10-25T13:30:01.518 thread-0  producer_plugin.cpp:345       on_incoming_block    ] Received block 9601acf6bdb45269... #671295 @ 2019-10-25T13:30:01.500 signed by agribofc [trxs: 0, lib: 671255, conf: 0, latency: 18 ms]
+info  2019-10-25T13:30:02.016 thread-0  producer_plugin.cpp:345       on_incoming_block    ] Received block 57eb27ea8627c695... #671296 @ 2019-10-25T13:30:02.000 signed by agribofc [trxs: 0, lib: 671255, conf: 0, latency: 16 ms]
+```
+If you not expected this logs, so here is a problem and node listen blockchain network. In this situation <br>
+you need to contact support at [plasmapay.com](https://plasmapa.com/) or discord channel `PlasmaPay - crypto . . .` . 
