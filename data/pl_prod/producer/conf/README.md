@@ -24,7 +24,7 @@ Taken from docs:
 There is all ok, this steps is correct.
 But if dive deep, we can find some not trivial things:
 Taken from docs: <br>
-[!alt_text](/images/PlasmaShell.png "Docs: Step 2") <br>
+![PlasmaDLT Node Set-up Guide / Step 2](https://github.com/OnGridSystems/hack_moscow_contracts/edit/master/data/pl_prod/producer/conf/PlasmaShell.png "Docs: Step 2") <br>
 *Note*: <br>
 > At origin docs described at Step 2 guide says we need to use `config.json`,
 > but at real node uses `config.ini`, what I will describe below.  
